@@ -84,10 +84,10 @@ fun brickPasses(a: Int, b: Int, c: Int, r: Int, s: Int): Boolean {
         minH = r
         maxH = s
     }
-    if (a < b && a < c) {
+    if (a <= b && a <= c) {
         minS = a
         avgS = if (b > c) c else b
-    } else if (b < a && b < c) {
+    } else if (b <= a && b <= c) {
         minS = b
         avgS = if (a > c) c else a
     } else {
