@@ -40,12 +40,15 @@ fun queenThreatens(x1: Int, y1: Int, x2: Int, y2: Int): Boolean =
  * Дан номер месяца (от 1 до 12 включительно) и год (положительный).
  * Вернуть число дней в этом месяце этого года по григорианскому календарю.
  */
-fun daysInMonth(month: Int, year: Int): Int = when {
-    (month == 1) || (month == 3) || (month == 5) || (month == 7) || (month == 8) || (month == 10) || (month == 12) -> 31
-    (month == 4) || (month == 6) || (month == 9) || (month == 11) -> 30
-    (((year % 4 == 0) && (year % 100 != 0)) || (year % 400 == 0)) && (month == 2) -> 29
-    else -> 28
+fun daysInMonth(month: Int, year: Int): Int {
+    if ((month == 2) && (((year % 4 == 0) && (year % 100 != 0)) || (year % 400 == 0))) return 29
+    return when (month) {
+        1, 3, 5, 7, 8, 10, 12 -> 31
+        4, 6, 9, 11 -> 30
+        else -> 28
+    }
 }
+
 /**
  * Простая (2 балла)
  *
@@ -69,5 +72,28 @@ fun circleInside(
  * кирпич 4 х 4 х 4 пройдёт через отверстие 4 х 4.
  * Вернуть true, если кирпич пройдёт
  */
-fun brickPasses(a: Int, b: Int, c: Int, r: Int, s: Int): Boolean =
-    ((a <= r) && ((b <= s) || (c <= s))) || ((b <= r) && ((a <= s) || (c <= s))) || ((c <= r) && ((a <= s) || (b <= s)))
+fun brickPasses(a: Int, b: Int, c: Int, r: Int, s: Int): Boolean {
+    val minH: Int
+    val maxH: Int
+    val avgS: Int
+    val minS: Int
+    if (r > s) {
+        minH = s
+        maxH = r
+    } else {
+        minH = r
+        maxH = s
+    }
+    if (a < b && a < c) {
+        minS = a
+        avgS = if (b > c) c else b
+    } else if (b < a && b < c) {
+        minS = b
+        avgS = if (a > c) c else a
+    } else {
+        minS = c
+        avgS = if (a > b) b else a
+    }
+    return (maxH >= avgS && minH >= minS)
+}
+

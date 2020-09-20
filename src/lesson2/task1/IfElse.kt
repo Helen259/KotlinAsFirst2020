@@ -5,6 +5,7 @@ package lesson2.task1
 import lesson1.task1.discriminant
 import lesson1.task1.sqr
 import kotlin.math.max
+import kotlin.math.roundToInt
 import kotlin.math.sqrt
 
 // Урок 2: ветвления (здесь), логический тип (см. 2.2).
@@ -70,8 +71,9 @@ fun minBiRoot(a: Double, b: Double, c: Double): Double {
  * вернуть строку вида: «21 год», «32 года», «12 лет».
  */
 fun ageDescription(age: Int): String = when {
-    (age % 10 in 2..4) && (age % 100 !in 11..14) -> "$age года"
-    (age % 10 == 1) && (age % 100 !in 11..14) -> "$age год"
+    (age % 100 in 11..14) -> "$age лет"
+    (age % 10 in 2..4) -> "$age года"
+    (age % 10 == 1) -> "$age год"
     else -> "$age лет"
 }
 
@@ -102,9 +104,9 @@ fun whichRookThreatens(
     rookX1: Int, rookY1: Int,
     rookX2: Int, rookY2: Int
 ): Int = when {
-    ((rookX1 == kingX) || (rookY1 == kingY)) && (rookX2 != kingX) && (rookY2 != kingY) -> 1
-    (rookX1 != kingX) && (rookY1 != kingY) && ((rookX2 == kingX) || (rookY2 == kingY)) -> 2
-    ((rookX1 == kingX) || (rookY1 == kingY)) && ((rookX2 == kingX) || (rookY2 == kingY)) -> 3
+    (kingX == rookX1 && kingY == rookY2) || (kingX == rookX2 && kingY == rookY1) -> 3
+    (kingX == rookX1) || (kingY == rookY1) -> 1
+    (kingX == rookX2) || (kingY == rookY2) -> 2
     else -> 0
 }
 
@@ -133,12 +135,29 @@ fun rookOrBishopThreatens(
  * Если такой треугольник не существует, вернуть -1.
  */
 fun triangleKind(a: Double, b: Double, c: Double): Int {
-    return if ((a > b + c) || (b > c + a) || (c > a + b)) -1
-    else if ((sqr(a) == sqr(b) + sqr(c)) || (sqr(b) == sqr(a) + sqr(c)) || (sqr(c) == sqr(a) + sqr(b))) 1
-    else if ((sqr(a) > sqr(b) + sqr(c)) || (sqr(b) > sqr(a) + sqr(c)) || (sqr(c) > sqr(a) + sqr(b))) 2
-    else 0
+    val maxSide: Double
+    val side2: Double
+    val side3: Double
+    if (b > c && b > a) {
+        maxSide = b
+        side2 = c
+        side3 = a
+    } else if (c > a && c > b) {
+        maxSide = c
+        side2 = b
+        side3 = a
+    } else {
+        maxSide = a
+        side2 = c
+        side3 = b
+    }
+    return when {
+        maxSide > side2 + side3 -> -1
+        sqr(maxSide) == sqr(side2) + sqr(side3) -> 1
+        sqr(maxSide) > sqr(side2) + sqr(side3) -> 2
+        else -> 0
+    }
 }
-
 /**
  * Средняя (3 балла)
  *
@@ -149,8 +168,8 @@ fun triangleKind(a: Double, b: Double, c: Double): Int {
  */
 fun segmentLength(a: Int, b: Int, c: Int, d: Int): Int = when {
     (c >= a) && (d <= b) -> d - c
-    (c <= b) && (c >= a) && (d >= b) -> b - c
     (c <= a) && (d >= b) -> b - a
-    (c <= a) && (d >= a) && (d <= b) -> d - a
-else -> -1
+    (c >= a) && (c <= b) -> b - c
+    (c <= a) && (d >= a) -> d - a
+    else -> -1
 }
