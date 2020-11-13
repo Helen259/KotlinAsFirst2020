@@ -364,9 +364,9 @@ fun russian(n: Int): String {
             result += "$russian "
             worker -= number
         }
-        if (worker == 0) return result
+        if (worker == 0) return result.trimEnd()
     }
-    return result.trim()
+    return result.trimEnd()
 }
 private fun getRussianNumberString(
     numbers1: Map<Int, String>,
