@@ -3,7 +3,11 @@
 package lesson4.task1
 
 import lesson1.task1.discriminant
+import lesson1.task1.sqr
+import lesson3.task1.minDivisor
+import java.util.*
 import kotlin.math.sqrt
+import kotlin.random.Random.Default.nextInt
 
 // Урок 4: списки
 // Максимальное количество баллов = 12
@@ -120,14 +124,18 @@ fun buildSumExample(list: List<Int>) = list.joinToString(separator = " + ", post
  * по формуле abs = sqrt(a1^2 + a2^2 + ... + aN^2).
  * Модуль пустого вектора считать равным 0.0.
  */
-fun abs(v: List<Double>): Double = TODO()
+fun abs(v: List<Double>): Double = v.fold(0.0) { previousResult, element ->
+    sqrt(sqr(previousResult) + sqr(element))
+}
 
 /**
  * Простая (2 балла)
  *
  * Рассчитать среднее арифметическое элементов списка list. Вернуть 0.0, если список пуст
  */
-fun mean(list: List<Double>): Double = TODO()
+fun mean(list: List<Double>): Double = list.fold(0.0) { previousResult, element ->
+    previousResult + element / list.size
+}
 
 /**
  * Средняя (3 балла)
@@ -137,7 +145,13 @@ fun mean(list: List<Double>): Double = TODO()
  *
  * Обратите внимание, что данная функция должна изменять содержание списка list, а не его копии.
  */
-fun center(list: MutableList<Double>): MutableList<Double> = TODO()
+fun center(list: MutableList<Double>): MutableList<Double> {
+    val mean2 = mean(list)
+    for (i in 0 until list.size) {
+        list[i] -= mean2
+    }
+    return list
+}
 
 /**
  * Средняя (3 балла)
@@ -177,7 +191,17 @@ fun accumulate(list: MutableList<Int>): MutableList<Int> = TODO()
  * Результат разложения вернуть в виде списка множителей, например 75 -> (3, 5, 5).
  * Множители в списке должны располагаться по возрастанию.
  */
-fun factorize(n: Int): List<Int> = TODO()
+fun factorize(n: Int): List<Int> {
+    val m = mutableListOf<Int>()
+    var number = n
+    while (number > 1) {
+        val f = minDivisor(number)
+        m.add(f)
+        number /= f
+    }
+    return m
+}
+
 
 /**
  * Сложная (4 балла)
@@ -186,7 +210,7 @@ fun factorize(n: Int): List<Int> = TODO()
  * Результат разложения вернуть в виде строки, например 75 -> 3*5*5
  * Множители в результирующей строке должны располагаться по возрастанию.
  */
-fun factorizeToString(n: Int): String = TODO()
+fun factorizeToString(n: Int): String = factorize(n).joinToString(separator = "*")
 
 /**
  * Средняя (3 балла)
@@ -195,7 +219,18 @@ fun factorizeToString(n: Int): String = TODO()
  * Результат перевода вернуть в виде списка цифр в base-ичной системе от старшей к младшей,
  * например: n = 100, base = 4 -> (1, 2, 1, 0) или n = 250, base = 14 -> (1, 3, 12)
  */
-fun convert(n: Int, base: Int): List<Int> = TODO()
+fun convert(n: Int, base: Int): List<Int> {
+    var number = n
+    val itog = mutableListOf<Int>()
+    if (number == 0) {
+        itog.add(0)
+    }
+    while (number > 0) {
+        itog.add(number % base)
+        number /= base
+    }
+    return itog.reversed()
+}
 
 /**
  * Сложная (4 балла)
@@ -219,6 +254,7 @@ fun convertToString(n: Int, base: Int): String = TODO()
  */
 fun decimal(digits: List<Int>, base: Int): Int = TODO()
 
+
 /**
  * Сложная (4 балла)
  *
@@ -241,7 +277,22 @@ fun decimalFromString(str: String, base: Int): Int = TODO()
  * 90 = XC, 100 = C, 400 = CD, 500 = D, 900 = CM, 1000 = M.
  * Например: 23 = XXIII, 44 = XLIV, 100 = C
  */
-fun roman(n: Int): String = TODO()
+fun roman(n: Int): String {
+    var number = n
+    var result = ""
+    val zip = mapOf(
+        1000 to "M", 900 to "CM", 500 to "D", 400 to "CD", 100 to "C", 90 to "XC", 50 to "L", 40 to "XL", 10 to "X",
+        9 to "IX", 5 to "V", 4 to "IV", 1 to "I"
+    )
+    for ((arabic, roman) in zip) {
+        while (number >= arabic) {
+            result += roman
+            number -= arabic
+        }
+    }
+    return result
+}
+
 
 /**
  * Очень сложная (7 баллов)
@@ -250,4 +301,95 @@ fun roman(n: Int): String = TODO()
  * Например, 375 = "триста семьдесят пять",
  * 23964 = "двадцать три тысячи девятьсот шестьдесят четыре"
  */
-fun russian(n: Int): String = TODO()
+fun russian(n: Int): String {
+    val length = n.toString().length // length < 3 -> n in 1..999; length > 3 -> n in 1000..999999
+    val order: Int = length / 4
+    val numbers1 = mapOf( // на 4 разряде 1
+        900 to "девятьсот", 800 to "восемьсот", 700 to "семьсот", 600 to "шестьсот", 500 to "пятьсот",
+        400 to "четыреста", 300 to "триста", 200 to "двести", 100 to "сто",
+        90 to "девяносто", 80 to "восемьдесят", 70 to "семьдесят", 60 to "шестьдесят", 50 to "пятьдесят",
+        40 to "сорок", 30 to "тридцать", 20 to "двадцать", 19 to "девятнадцать",
+        18 to "восемнадцать", 17 to "семнадцать", 16 to "шестнадцать", 15 to "пятнадцать",
+        14 to "четырнадцать", 13 to "тринадцать", 12 to "двенадцать", 11 to "одиннадцать", 10 to "десять",
+        9 to "девять", 8 to "восемь", 7 to "семь", 6 to "шесть", 5 to "пять",
+        4 to "четыре", 3 to "три", 2 to "два", 1 to "одна"
+    )
+    val numbers24 = mapOf( // на 4 разряде 2, 3, 4
+        900 to "девятьсот", 800 to "восемьсот", 700 to "семьсот", 600 to "шестьсот", 500 to "пятьсот",
+        400 to "четыреста", 300 to "триста", 200 to "двести", 100 to "сто",
+        90 to "девяносто", 80 to "восемьдесят", 70 to "семьдесят", 60 to "шестьдесят", 50 to "пятьдесят",
+        40 to "сорок", 30 to "тридцать", 20 to "двадцать", 19 to "девятнадцать",
+        18 to "восемнадцать", 17 to "семнадцать", 16 to "шестнадцать", 15 to "пятнадцать",
+        14 to "четырнадцать", 13 to "тринадцать", 12 to "двенадцать", 11 to "одиннадцать", 10 to "десять",
+        9 to "девять", 8 to "восемь", 7 to "семь", 6 to "шесть", 5 to "пять",
+        4 to "четыре", 3 to "три", 2 to "две", 1 to "один"
+    )
+    val numbers59 = mapOf( // на 4 разряде 5..9 либо 0
+        900 to "девятьсот", 800 to "восемьсот", 700 to "семьсот", 600 to "шестьсот", 500 to "пятьсот",
+        400 to "четыреста", 300 to "триста", 200 to "двести", 100 to "сто",
+        90 to "девяносто", 80 to "восемьдесят", 70 to "семьдесят", 60 to "шестьдесят", 50 to "пятьдесят",
+        40 to "сорок", 30 to "тридцать", 20 to "двадцать", 19 to "девятнадцать",
+        18 to "восемнадцать", 17 to "семнадцать", 16 to "шестнадцать", 15 to "пятнадцать",
+        14 to "четырнадцать", 13 to "тринадцать", 12 to "двенадцать", 11 to "одиннадцать", 10 to "десять",
+        9 to "девять", 8 to "восемь", 7 to "семь", 6 to "шесть", 5 to "пять",
+        4 to "четыре", 3 to "три", 2 to "два", 1 to "один"
+    )
+    var worker = n
+    var result = ""
+    val orderOnFourth: Int
+    if (order >= 1) {
+        orderOnFourth = worker.toString().reversed().split("")[4].toInt()
+        val rightBound = if (length % 3 == 0) 3 else length % 3
+        worker = n.toString().substring(0, rightBound).toInt()
+        when {
+            orderOnFourth == 1 -> {
+                val pair = getRussianNumberString(numbers1, worker, result, n, rightBound, length, "тысяча")
+                result = pair.first
+                worker = pair.second
+            }
+            orderOnFourth in 2..4 -> {
+                val pair = getRussianNumberString(numbers24, worker, result, n, rightBound, length, "тысячи")
+                result = pair.first
+                worker = pair.second
+            }
+            orderOnFourth in 5..9 || orderOnFourth == 0 -> {
+                val pair = getRussianNumberString(numbers59, worker, result, n, rightBound, length, "тысяч")
+                result = pair.first
+                worker = pair.second
+            }
+        }
+    }
+    for ((number, russian) in numbers59) {
+        while (worker >= number) {
+            result += "$russian "
+            worker -= number
+        }
+        if (worker == 0) return result
+    }
+    return result.trim()
+}
+private fun getRussianNumberString(
+    numbers1: Map<Int, String>,
+    worker: Int,
+    result: String,
+    n: Int,
+    rightBound: Int,
+    length: Int,
+    suffix: String
+): Pair<String, Int> {
+    var worker1 = worker
+    var result1 = result
+    for ((number, russian) in numbers1) {
+        while (worker1 >= number) {
+            result1 += "$russian "
+            worker1 -= number
+        }
+        if (worker1 == 0) {
+            result1 += "$suffix "
+            worker1 = n.toString().substring(rightBound, length).toInt()
+            break
+        }
+    }
+    return Pair(result1, worker1)
+}
+

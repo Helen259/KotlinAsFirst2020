@@ -2,6 +2,8 @@
 
 package lesson5.task1
 
+import kotlin.math.max
+
 // Урок 5: ассоциативные массивы и множества
 // Максимальное количество баллов = 14
 // Рекомендуемое количество баллов = 9
@@ -96,7 +98,15 @@ fun buildWordSet(text: List<String>): MutableSet<String> {
  *   buildGrades(mapOf("Марат" to 3, "Семён" to 5, "Михаил" to 5))
  *     -> mapOf(5 to listOf("Семён", "Михаил"), 3 to listOf("Марат"))
  */
-fun buildGrades(grades: Map<String, Int>): Map<Int, List<String>> = TODO()
+fun buildGrades(grades: Map<String, Int>): Map<Int, List<String>> {
+    val arr = mutableMapOf<Int, MutableList<String>>()
+    for ((student, grade) in grades) {
+        if (arr[grade] == null) arr[grade] = mutableListOf(student)
+        else arr[grade]?.add(student)
+    }
+    return arr
+}
+
 
 /**
  * Простая (2 балла)
@@ -108,7 +118,13 @@ fun buildGrades(grades: Map<String, Int>): Map<Int, List<String>> = TODO()
  *   containsIn(mapOf("a" to "z"), mapOf("a" to "z", "b" to "sweet")) -> true
  *   containsIn(mapOf("a" to "z"), mapOf("a" to "zee", "b" to "sweet")) -> false
  */
-fun containsIn(a: Map<String, String>, b: Map<String, String>): Boolean = TODO()
+fun containsIn(a: Map<String, String>, b: Map<String, String>): Boolean {
+    for ((x, y) in a) {
+        if (y != b[x])
+            return false
+    }
+    return true
+}
 
 /**
  * Простая (2 балла)
@@ -125,8 +141,11 @@ fun containsIn(a: Map<String, String>, b: Map<String, String>): Boolean = TODO()
  *     -> a changes to mutableMapOf() aka becomes empty
  */
 fun subtractOf(a: MutableMap<String, String>, b: Map<String, String>) {
-    TODO()
+    for ((x, y) in b) {
+        a.remove(x, y)
+    }
 }
+
 
 /**
  * Простая (2 балла)
@@ -154,7 +173,15 @@ fun whoAreInBoth(a: List<String>, b: List<String>): List<String> = TODO()
  *     mapOf("Emergency" to "911", "Police" to "02")
  *   ) -> mapOf("Emergency" to "112, 911", "Police" to "02")
  */
-fun mergePhoneBooks(mapA: Map<String, String>, mapB: Map<String, String>): Map<String, String> = TODO()
+fun mergePhoneBooks(mapA: Map<String, String>, mapB: Map<String, String>): Map<String, String> {
+    val map = mapA.toMutableMap()
+    for ((name, phone) in mapB) {
+        if ((phone != mapA[name]) && (name in mapA.keys)) map[name] += ", $phone"
+        else map += name to phone
+    }
+
+    return map
+}
 
 /**
  * Средняя (4 балла)
@@ -183,7 +210,18 @@ fun averageStockPrice(stockPrices: List<Pair<String, Double>>): Map<String, Doub
  *     "печенье"
  *   ) -> "Мария"
  */
-fun findCheapestStuff(stuff: Map<String, Pair<String, Double>>, kind: String): String? = TODO()
+fun findCheapestStuff(stuff: Map<String, Pair<String, Double>>, kind: String): String? {
+    var min = Double.MAX_VALUE
+    var goods: String? = null
+    for ((product, pair) in stuff) {
+        if (pair.first == kind && pair.second <= min) {
+            goods = product
+            min = pair.second
+        }
+    }
+    return goods
+}
+
 
 /**
  * Средняя (3 балла)
@@ -277,7 +315,15 @@ fun propagateHandshakes(friends: Map<String, Set<String>>): Map<String, Set<Stri
  *   findSumOfTwo(listOf(1, 2, 3), 4) -> Pair(0, 2)
  *   findSumOfTwo(listOf(1, 2, 3), 6) -> Pair(-1, -1)
  */
-fun findSumOfTwo(list: List<Int>, number: Int): Pair<Int, Int> = TODO()
+fun findSumOfTwo(list: List<Int>, number: Int): Pair<Int, Int> {
+    for (i in 0 until list.size - 1) {
+        for (j in list.indices) {
+            if ((i != j) && (list[i] + list[j] == number)) return Pair(i, j)
+        }
+    }
+    return Pair(-1, -1)
+}
+
 
 /**
  * Очень сложная (8 баллов)
@@ -300,4 +346,35 @@ fun findSumOfTwo(list: List<Int>, number: Int): Pair<Int, Int> = TODO()
  *     450
  *   ) -> emptySet()
  */
-fun bagPacking(treasures: Map<String, Pair<Int, Int>>, capacity: Int): Set<String> = TODO()
+fun bagPacking(treasures: Map<String, Pair<Int, Int>>, capacity: Int): Set<String> {
+    val weight = arrayListOf<Int>()
+    val price = arrayListOf<Int>()
+    val names = arrayListOf<String>()
+    val result = mutableSetOf<String>()
+    var size = treasures.size
+    var cap = capacity
+    val dp = Array(size + 1) { Array(cap + 1) { 0 } }
+    for ((x, y) in treasures) {
+        weight.add(y.first)
+        price.add(y.second)
+        names.add(x)
+    }
+    for (i in 1..size) {
+        for (j in 1..cap) {
+            dp[i][j] = if (j >= weight[i - 1]) max((price[i - 1] + dp[i - 1][j - weight[i - 1]]), dp[i - 1][j])
+            else dp[i - 1][j]
+        }
+    }
+    while (cap > 0 && size > 0) {
+        size--
+        if (dp[size][cap] != dp[size + 1][cap]) {
+            result.add(names[size])
+            cap -= weight[size]
+        }
+    }
+    return result
+}
+
+
+
+
