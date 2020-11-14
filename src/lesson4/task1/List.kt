@@ -302,9 +302,8 @@ fun roman(n: Int): String {
  * 23964 = "двадцать три тысячи девятьсот шестьдесят четыре"
  */
 fun russian(n: Int): String {
-    val length = n.toString().length // length < 3 -> n in 1..999; length > 3 -> n in 1000..999999
-    val order: Int = length / 4
-    val numbers1 = mapOf( // на 4 разряде 1
+    val length = n.toString().length
+    val numbers1 = mapOf(
         900 to "девятьсот", 800 to "восемьсот", 700 to "семьсот", 600 to "шестьсот", 500 to "пятьсот",
         400 to "четыреста", 300 to "триста", 200 to "двести", 100 to "сто",
         90 to "девяносто", 80 to "восемьдесят", 70 to "семьдесят", 60 to "шестьдесят", 50 to "пятьдесят",
@@ -336,29 +335,27 @@ fun russian(n: Int): String {
     )
     var worker = n
     var result = ""
-    val orderOnFourth: Int
-    if (order >= 1) {
-        orderOnFourth = worker.toString().reversed().split("")[4].toInt()
+    if (length / 4 >= 1) {
         val rightBound = if (length % 3 == 0) 3 else length % 3
         worker = n.toString().substring(0, rightBound).toInt()
-        when {
-            orderOnFourth == 1 -> {
-                val pair = getRussianNumberString(numbers1, worker, result, n, rightBound, length, "тысяча")
-                result = pair.first
-                worker = pair.second
-            }
-            orderOnFourth in 2..4 -> {
-                val pair = getRussianNumberString(numbers24, worker, result, n, rightBound, length, "тысячи")
-                result = pair.first
-                worker = pair.second
-            }
-            orderOnFourth in 5..9 || orderOnFourth == 0 -> {
-                val pair = getRussianNumberString(numbers59, worker, result, n, rightBound, length, "тысяч")
-                result = pair.first
-                worker = pair.second
-            }
+
+        if (n % 10000 / 1000 in 2..4 && n % 100000 / 10000 != 1) {
+            val pair = getRussianNumberString(numbers24, worker, result, n, rightBound, length, "тысячи")
+            result = pair.first
+            worker = pair.second
+
+        } else if ((n % 10000 / 1000) == 1 && n % 100000 / 10000 != 1) {
+            val pair = getRussianNumberString(numbers1, worker, result, n, rightBound, length, "тысяча")
+            result = pair.first
+            worker = pair.second
+
+        } else {
+            val pair = getRussianNumberString(numbers59, worker, result, n, rightBound, length, "тысяч")
+            result = pair.first
+            worker = pair.second
         }
     }
+
     for ((number, russian) in numbers59) {
         while (worker >= number) {
             result += "$russian "
