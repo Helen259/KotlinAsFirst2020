@@ -6,6 +6,7 @@ import lesson1.task1.discriminant
 import lesson1.task1.sqr
 import lesson3.task1.minDivisor
 import java.util.*
+import java.util.Arrays.sort
 import kotlin.math.sqrt
 import kotlin.random.Random.Default.nextInt
 
@@ -124,18 +125,21 @@ fun buildSumExample(list: List<Int>) = list.joinToString(separator = " + ", post
  * по формуле abs = sqrt(a1^2 + a2^2 + ... + aN^2).
  * Модуль пустого вектора считать равным 0.0.
  */
-fun abs(v: List<Double>): Double = v.fold(0.0) { previousResult, element ->
-    sqrt(sqr(previousResult) + sqr(element))
+fun abs(v: List<Double>): Double {
+    var sum = 0.0
+    for (element in v) {
+        sum += sqr(element)
+    }
+    return sqrt(sum)
 }
+
 
 /**
  * Простая (2 балла)
  *
  * Рассчитать среднее арифметическое элементов списка list. Вернуть 0.0, если список пуст
  */
-fun mean(list: List<Double>): Double = list.fold(0.0) { previousResult, element ->
-    previousResult + element / list.size
-}
+fun mean(list: List<Double>): Double = if (list.isNotEmpty()) list.sum() / list.size else 0.0
 
 /**
  * Средняя (3 балла)
@@ -192,14 +196,18 @@ fun accumulate(list: MutableList<Int>): MutableList<Int> = TODO()
  * Множители в списке должны располагаться по возрастанию.
  */
 fun factorize(n: Int): List<Int> {
-    val m = mutableListOf<Int>()
     var number = n
-    while (number > 1) {
-        val f = minDivisor(number)
-        m.add(f)
-        number /= f
+    var a = 2
+    val divisors = mutableListOf<Int>()
+
+    while (number >= a) {
+        while (number % a == 0) {
+            divisors.add(a)
+            number /= a
+        }
+        a++
     }
-    return m
+    return divisors
 }
 
 
@@ -221,15 +229,14 @@ fun factorizeToString(n: Int): String = factorize(n).joinToString(separator = "*
  */
 fun convert(n: Int, base: Int): List<Int> {
     var number = n
-    val itog = mutableListOf<Int>()
-    if (number == 0) {
-        itog.add(0)
-    }
-    while (number > 0) {
-        itog.add(number % base)
+    val result = mutableListOf<Int>()
+
+    if (number == 0) result.add(0)
+    else while (number > 0) {
+        result.add(number % base)
         number /= base
     }
-    return itog.reversed()
+    return result.reversed()
 }
 
 /**
@@ -333,60 +340,62 @@ fun russian(n: Int): String {
         9 to "девять", 8 to "восемь", 7 to "семь", 6 to "шесть", 5 to "пять",
         4 to "четыре", 3 to "три", 2 to "два", 1 to "один"
     )
-    var worker = n
+    var number = n
     var result = ""
     if (length / 4 >= 1) {
         val rightBound = if (length % 3 == 0) 3 else length % 3
-        worker = n.toString().substring(0, rightBound).toInt()
+        number = n.toString().substring(0, rightBound).toInt()
 
         if (n % 10000 / 1000 in 2..4 && n % 100000 / 10000 != 1) {
-            val pair = getRussianNumberString(numbers24, worker, result, n, rightBound, length, "тысячи")
+            val pair = getRussianNumberString(numbers24, number, result, n, rightBound, length, "тысячи")
             result = pair.first
-            worker = pair.second
+            number = pair.second
 
         } else if ((n % 10000 / 1000) == 1 && n % 100000 / 10000 != 1) {
-            val pair = getRussianNumberString(numbers1, worker, result, n, rightBound, length, "тысяча")
+            val pair = getRussianNumberString(numbers1, number, result, n, rightBound, length, "тысяча")
             result = pair.first
-            worker = pair.second
+            number = pair.second
 
         } else {
-            val pair = getRussianNumberString(numbers59, worker, result, n, rightBound, length, "тысяч")
+            val pair = getRussianNumberString(numbers59, number, result, n, rightBound, length, "тысяч")
             result = pair.first
-            worker = pair.second
+            number = pair.second
         }
     }
 
-    for ((number, russian) in numbers59) {
-        while (worker >= number) {
+    for ((digit, russian) in numbers59) {
+        while (number >= digit) {
             result += "$russian "
-            worker -= number
+            number -= digit
         }
-        if (worker == 0) return result.trimEnd()
+        if (number == 0) return result.trimEnd()
     }
     return result.trimEnd()
 }
+
+
 private fun getRussianNumberString(
     numbers1: Map<Int, String>,
-    worker: Int,
+    number: Int,
     result: String,
     n: Int,
     rightBound: Int,
     length: Int,
     suffix: String
 ): Pair<String, Int> {
-    var worker1 = worker
+    var number1 = number
     var result1 = result
-    for ((number, russian) in numbers1) {
-        while (worker1 >= number) {
+    for ((digit, russian) in numbers1) {
+        while (number1 >= digit) {
             result1 += "$russian "
-            worker1 -= number
+            number1 -= digit
         }
-        if (worker1 == 0) {
+        if (number1 == 0) {
             result1 += "$suffix "
-            worker1 = n.toString().substring(rightBound, length).toInt()
+            number1 = n.toString().substring(rightBound, length).toInt()
             break
         }
     }
-    return Pair(result1, worker1)
+    return Pair(result1, number1)
 }
 
