@@ -160,12 +160,8 @@ fun bestHighJump(jumps: String): Int {
     if (!jumps.matches(Regex("""[\d%+\- ]*"""))) return -1
     val list = jumps.split(" ")
     var maxim = -1
-    var a = -1
-    for (i in list.indices) {
-        when (list[i].toIntOrNull()) {
-            null -> if ('+' in list[i] && a > maxim) maxim = a
-            else -> a = list[i].toInt()
-        }
+    for (i in list.indices step (2)) {
+        if ("+" in list[i + 1] && list[i].toInt() > maxim) maxim = list[i].toInt()
     }
     return maxim
 }
@@ -181,7 +177,7 @@ fun bestHighJump(jumps: String): Int {
  * Про нарушении формата входной строки бросить исключение IllegalArgumentException
  */
 fun plusMinus(expression: String): Int {
-    if (!expression.matches(Regex("""\d+(\s[+\d-]\s\d+)*"""))) throw IllegalArgumentException("Expression")
+    if (!expression.matches(Regex("""\d+( ([+\-]) \d+)*"""))) throw IllegalArgumentException("Expression")
     val list = expression.split(" ")
     var result = list[0].toInt()
     for (i in 1 until list.size step 2) {
