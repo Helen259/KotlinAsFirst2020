@@ -344,6 +344,7 @@ fun markdownToHtmlSimple(inputName: String, outputName: String) {
             if (line[i] == '*' && line[i + 1] == '*' && line[i + 2] == '*') {
                 writer.write("</b></i>")
                 i += 3
+                continue
             }
             if (line[i] == '*' && line[i + 1] == '*') {
                 if (list.last() == "**") {
@@ -354,6 +355,7 @@ fun markdownToHtmlSimple(inputName: String, outputName: String) {
                     writer.write("<b>")
                     i += 2
                     list += "**"
+                    continue
                 }
             }
             if (line[i] == '*') {
@@ -365,6 +367,7 @@ fun markdownToHtmlSimple(inputName: String, outputName: String) {
                     writer.write("<i>")
                     i += 1
                     list += "*"
+                    continue
                 }
             }
             if (line[i] == '~') {
@@ -376,6 +379,7 @@ fun markdownToHtmlSimple(inputName: String, outputName: String) {
                     writer.write("<s>")
                     i += 2
                     list += "~~"
+                    continue
                 }
             }
             writer.write("${line[i]}")
