@@ -329,65 +329,7 @@ Suspendisse <s>et elit in enim tempus iaculis</s>.
  * (Отступы и переносы строк в примере добавлены для наглядности, при решении задачи их реализовывать не обязательно)
  */
 fun markdownToHtmlSimple(inputName: String, outputName: String) {
-    val reader = File(inputName).readLines()
-    val writer = File(outputName).bufferedWriter()
-    writer.write("<html>\n<body>\n<p>\n")
-    val list = mutableListOf("")
-    for (i in reader.indices) {
-        if (reader[i].isEmpty() && reader[i + 1].isNotEmpty()) {
-            writer.write("</p>\n <p>")
-        }
-        var line = reader[i]
-        var i = 0
-        line += "  "
-        while (i < line.length - 2) {
-            if (line[i] == '*' && line[i + 1] == '*' && line[i + 2] == '*') {
-                writer.write("</b></i>")
-                i += 3
-                continue
-            }
-            if (line[i] == '*' && line[i + 1] == '*') {
-                if (list.last() == "**") {
-                    writer.write("</b>")
-                    i += 2
-                    list.remove(list.last())
-                } else {
-                    writer.write("<b>")
-                    i += 2
-                    list += "**"
-                    continue
-                }
-            }
-            if (line[i] == '*') {
-                if (list.last() == "*") {
-                    writer.write("</i>")
-                    list.remove(list.last())
-                    i += 1
-                } else {
-                    writer.write("<i>")
-                    i += 1
-                    list += "*"
-                    continue
-                }
-            }
-            if (line[i] == '~') {
-                if (list.last() == "~~") {
-                    writer.write("</s>")
-                    list.remove(list.last())
-                    i += 2
-                } else {
-                    writer.write("<s>")
-                    i += 2
-                    list += "~~"
-                    continue
-                }
-            }
-            writer.write("${line[i]}")
-            i++
-        }
-    }
-    writer.write("</p>\n</body>\n</html>")
-    writer.close()
+    TODO()
 }
 
 /**
