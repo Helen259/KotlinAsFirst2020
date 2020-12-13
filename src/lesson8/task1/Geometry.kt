@@ -3,10 +3,7 @@
 package lesson8.task1
 
 import lesson1.task1.sqr
-import kotlin.math.PI
-import kotlin.math.cos
-import kotlin.math.sin
-import kotlin.math.sqrt
+import kotlin.math.*
 
 // Урок 8: простые классы
 // Максимальное количество баллов = 40 (без очень трудных задач = 11)
@@ -82,9 +79,10 @@ data class Circle(val center: Point, val radius: Double) {
      * расстояние между их центрами минус сумма их радиусов.
      * Расстояние между пересекающимися окружностями считать равным 0.0.
      */
-    fun distance(other: Circle): Double = if (center.distance(other.center) - (radius + other.radius) > 0)
-        center.distance(other.center) - radius - other.radius else 0.0
-
+    fun distance(other: Circle): Double {
+        val d= center.distance(other.center) - (radius + other.radius)
+        return if (d > 0) d else 0.0
+    }
 
     /**
      * Тривиальная (1 балл)
@@ -93,6 +91,7 @@ data class Circle(val center: Point, val radius: Double) {
      */
     fun contains(p: Point): Boolean = center.distance(p) <= radius
 }
+
 /**
  * Отрезок между двумя точками
  */
@@ -132,7 +131,11 @@ fun diameter(vararg points: Point): Segment {
  * Построить окружность по её диаметру, заданному двумя точками
  * Центр её должен находиться посередине между точками, а радиус составлять половину расстояния между ними
  */
-fun circleByDiameter(diameter: Segment): Circle = TODO()
+fun circleByDiameter(diameter: Segment): Circle {
+    val center = Point((diameter.begin.x + diameter.end.x) / 2, (diameter.begin.y + diameter.end.y) / 2)
+    val radius = diameter.begin.distance(diameter.end) / 2
+    return Circle(center, radius)
+}
 
 /**
  * Прямая, заданная точкой point и углом наклона angle (в радианах) по отношению к оси X.
@@ -153,7 +156,13 @@ class Line private constructor(val b: Double, val angle: Double) {
      * Найти точку пересечения с другой линией.
      * Для этого необходимо составить и решить систему из двух уравнений (каждое для своей прямой)
      */
-    fun crossPoint(other: Line): Point = TODO()
+    fun crossPoint(other: Line): Point {
+        val denominator = sin(other.angle) * cos(angle) - sin(angle) * cos(other.angle)
+        return Point(
+            (b * cos(other.angle) - other.b * cos(angle)) / denominator,
+            (b * sin(other.angle) - other.b * sin(angle)) / denominator
+        )
+    }
 
     override fun equals(other: Any?) = other is Line && angle == other.angle && b == other.b
 
@@ -178,14 +187,17 @@ fun lineBySegment(s: Segment): Line = TODO()
  *
  * Построить прямую по двум точкам
  */
-fun lineByPoints(a: Point, b: Point): Line = TODO()
+fun lineByPoints(a: Point, b: Point): Line = Line(a, (PI + atan((b.y - a.y) / (b.x - a.x))) % PI)
 
 /**
  * Сложная (5 баллов)
  *
  * Построить серединный перпендикуляр по отрезку или по двум точкам
  */
-fun bisectorByPoints(a: Point, b: Point): Line = TODO()
+fun bisectorByPoints(a: Point, b: Point): Line {
+    val line = lineByPoints(a, b)
+    return Line(Point((a.x + b.x) / 2, (a.y + b.y) / 2), abs(line.angle + PI / 2) % PI)
+}
 
 /**
  * Средняя (3 балла)
@@ -210,7 +222,10 @@ fun findNearestCirclePair(vararg circles: Circle): Pair<Circle, Circle> = TODO()
  * (построить окружность по трём точкам, или
  * построить окружность, описанную вокруг треугольника - эквивалентная задача).
  */
-fun circleByThreePoints(a: Point, b: Point, c: Point): Circle = TODO()
+fun circleByThreePoints(a: Point, b: Point, c: Point): Circle {
+    val center = bisectorByPoints(a, b).crossPoint(bisectorByPoints(b, c))
+    return Circle(center, center.distance(a))
+}
 
 /**
  * Очень сложная (10 баллов)
@@ -223,5 +238,22 @@ fun circleByThreePoints(a: Point, b: Point, c: Point): Circle = TODO()
  * три точки данного множества, либо иметь своим диаметром отрезок,
  * соединяющий две самые удалённые точки в данном множестве.
  */
-fun minContainingCircle(vararg points: Point): Circle = TODO()
+fun minContainingCircle(vararg points: Point): Circle {
+    if (points.isEmpty()) throw IllegalArgumentException()
+    if (points.size == 1) return Circle(points[0], 0.0)
+    if (points.size == 2) return circleByDiameter(Segment(points[0], points[1]))
 
+    val longD = diameter(*points)
+    var resCircle = circleByDiameter(longD)
+    var minRadius = if ((points.toSet() - longD.begin - longD.end).all { resCircle.contains(it) }) resCircle.radius
+    else Double.MAX_VALUE
+    val pointsFilter = points.filter { it != longD.begin && it != longD.end }
+    for (point in pointsFilter) {
+        val smallCircle = circleByThreePoints(longD.begin, longD.end, point)
+        if (smallCircle.radius < minRadius && pointsFilter.all { smallCircle.contains(it) }) {
+            minRadius = smallCircle.radius
+            resCircle = smallCircle
+        }
+    }
+    return resCircle
+}
