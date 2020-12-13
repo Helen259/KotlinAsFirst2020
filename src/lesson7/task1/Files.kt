@@ -342,8 +342,6 @@ fun markdownToHtmlSimple(inputName: String, outputName: String) {
     val reader = File(inputName).readLines()
     File(outputName).bufferedWriter().use {
         it.write("<html>\n<body>\n<p>\n")
-        while (reader[0].isEmpty())
-            reader.toMutableList().remove(reader[0])
         val list = mutableListOf("")
         for (i in reader.indices) {
             var line = reader[i]
@@ -356,7 +354,7 @@ fun markdownToHtmlSimple(inputName: String, outputName: String) {
             it.newLine()
             var i = 0
             while (i < line.length - 2) {
-                if (line[i] == '*' && line[i + 1] == '*' && line[i + 2] == '*') {
+                if (line[i] == '*' && line[i + 2] == '*' && line[i + 1] == '*') {
                     it.write("</b></i>")
                     i += 3
                     continue
@@ -387,7 +385,7 @@ fun markdownToHtmlSimple(inputName: String, outputName: String) {
                         continue
                     }
                 }
-                if (line[i] == '~') {
+                if (line[i] == '~' && line[i + 1] == '~') {
                     if (list.last() == "~~") {
                         it.write("</s>")
                         list.remove(list.last())
@@ -506,8 +504,76 @@ fun markdownToHtmlSimple(inputName: String, outputName: String) {
  * (Отступы и переносы строк в примере добавлены для наглядности, при решении задачи их реализовывать не обязательно)
  */
 fun markdownToHtmlLists(inputName: String, outputName: String) {
-    TODO()
+    File(outputName).bufferedWriter().use {
+        var s = 0
+        val stack = mutableListOf<String>()
+        fun ite() {
+            while (stack.isNotEmpty()) {
+                it.write("</li>")
+                it.write("</" + stack.last() + ">")
+                stack.removeAt(stack.size - 1)
+                s = 0
+            }
+        }
+        it.write("<html><body><p>")
+        for (line in File(inputName).readLines()) {
+            when {
+                line.matches(Regex("""^""" + " ".repeat(4 * s) + """\d+\..*""")) -> {
+                    stack.add("ol")
+                    it.write("<ol>")
+                    it.write("<li>")
+                    it.write(line.replaceFirst(Regex("""\s*\d+."""), ""))
+                    s++
+                }
+                line.matches(Regex("""^""" + " ".repeat(4 * s) + """\*.*""")) -> {
+                    stack.add("ul")
+                    it.write("<ul>")
+                    it.write("<li>")
+                    it.write(line.replaceFirst(Regex("""\s*\*"""), ""))
+                    s++
+                }
+                else -> {
+                    var t = true
+                    while (s > 0 && t) {
+                        it.write("</li>")
+                        when {
+                            line.matches(Regex("""^""" + " ".repeat(4 * (s - 1)) + """\d+\..*""")) -> {
+                                if (stack.last() == "ol") {
+                                    it.write("<li>")
+                                    it.write(line.replaceFirst(Regex("""\s*\d+."""), ""))
+                                    t = false
+                                } else {
+                                    ite()
+                                    it.write(line)
+                                }
+                            }
+                            line.matches(Regex("""^""" + " ".repeat(4 * (s - 1)) + """\*.*""")) -> {
+                                if (stack.last() == "ul") {
+                                    it.write("<li>")
+                                    it.write(line.replaceFirst(Regex("""\s*\*"""), ""))
+                                    t = false
+                                } else {
+                                    ite()
+                                    it.write(line)
+                                }
+                            }
+                            else -> {
+                                it.write("</" + stack.last() + ">")
+                                stack.removeAt(stack.size - 1)
+                                s--
+                            }
+                        }
+                    }
+                    if (s == 0) it.write(line)
+                    it.newLine()
+                }
+            }
+        }
+        ite()
+        it.write("</p></body></html>")
+    }
 }
+
 
 /**
  * Очень сложная (30 баллов)
