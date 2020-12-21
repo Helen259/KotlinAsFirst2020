@@ -80,7 +80,7 @@ data class Circle(val center: Point, val radius: Double) {
      * Расстояние между пересекающимися окружностями считать равным 0.0.
      */
     fun distance(other: Circle): Double {
-        val d= center.distance(other.center) - (radius + other.radius)
+        val d = center.distance(other.center) - (radius + other.radius)
         return if (d > 0) d else 0.0
     }
 
@@ -238,12 +238,10 @@ fun circleByThreePoints(a: Point, b: Point, c: Point): Circle {
  * три точки данного множества, либо иметь своим диаметром отрезок,
  * соединяющий две самые удалённые точки в данном множестве.
  */
-fun minContainingCircle(vararg points: Point): Circle {
-    if (points.isEmpty()) throw IllegalArgumentException()
+fun minContainingCircle(vararg points: Point): Circle = TODO()
+
+/*if (points.isEmpty()) throw IllegalArgumentException()
     if (points.size == 1) return Circle(points[0], 0.0)
     val longD = diameter(*points)
-    val resCircle = circleByDiameter(longD)
-    val point = points.maxByOrNull { it.distance(resCircle.center) }!!
-    return if (point == longD.begin || point == longD.end) resCircle
-    else circleByThreePoints(longD.begin, longD.end, point)
-}
+
+}*/

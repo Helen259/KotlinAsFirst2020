@@ -123,17 +123,17 @@ fun sibilants(inputName: String, outputName: String) {
  *
  */
 fun centerFile(inputName: String, outputName: String) {
-    val reader = File(inputName).readLines()
+    var reader = File(inputName).readLines()
     File(outputName).bufferedWriter().use {
+        reader = reader.map { it.trim() }
         var maxLine = 0
         for (line in reader) {
-            val line2 = line.trim()
-            if (line2.length > maxLine) maxLine = line2.length
+            if (line.length > maxLine) maxLine = line.length
         }
         for (line in reader) {
-            val n = (maxLine - line.trim().length) / 2
+            val n = (maxLine - line.length) / 2
             it.write(" ".repeat(n))
-            it.write(line.trim())
+            it.write(line)
             it.newLine()
         }
     }
@@ -168,38 +168,36 @@ fun centerFile(inputName: String, outputName: String) {
  * 8) Если входной файл удовлетворяет требованиям 1-7, то он должен быть в точности идентичен выходному файлу
  */
 fun alignFileByWidth(inputName: String, outputName: String) {
-    val reader = File(inputName).readLines()
-    File(outputName).bufferedWriter().use {
-        var max = 0
-        val str = StringBuilder()
-        for (line in reader) {
-            val line2 = line.split(" ")
-                .filter { it != "" }
-            val s = line2.sumBy { it.length } + line2.size - 1
+    var max = 0
+    val lines = mutableListOf<String>()
+
+    File(inputName).bufferedReader().useLines { inpLines ->
+        inpLines.forEach { line ->
+            lines.add(line.split(" ").filter { it != "" }.joinToString(" "))
+            val s = lines.last().length
             if (s > max) max = s
         }
-        for (i in reader) {
-            val words = i.split(" ")
-                .filter { it != "" }
-            if (words.size == 1) str.append(words[0])
-            if (words.isNotEmpty() && words.size != 1) {
-                val lengthWords = words.map { it.length }
-                    .sum()
-                val countG = (max - lengthWords) / (words.size - 1) // сколько пробелов как минимум
-                var remainingG = (max - lengthWords) % (words.size - 1) //  остатки по пробелам
+    }
+    File(outputName).bufferedWriter().use { writer ->
+        lines.forEach { line ->
+            val words = line.split(" ")
+            if (words.size == 1) writer.append(words[0])
+            else if (words.size > 1) {
+                val lengthWords = words.sumBy { it.length }
+                val countG = (max - lengthWords) / (words.size - 1)
+                var remainingG = (max - lengthWords) % (words.size - 1)
                 for (i in words.indices) {
-                    str.append(words[i])
+                    writer.append(words[i])
                     if (i == words.size - 1) break
-                    for (k in 0 until countG) str.append(" ")
+                    for (k in 0 until countG) writer.append(" ")
                     if (remainingG != 0) {
-                        str.append(" ")
+                        writer.append(" ")
                         remainingG--
                     }
                 }
             }
-            str.append("\n")
+            if (line != lines.last()) writer.append("\n")
         }
-        it.write(str.toString())
     }
 }
 
@@ -338,68 +336,69 @@ Suspendisse <s>et elit in enim tempus iaculis</s>.
  *
  * (Отступы и переносы строк в примере добавлены для наглядности, при решении задачи их реализовывать не обязательно)
  */
+
 fun markdownToHtmlSimple(inputName: String, outputName: String) {
     val reader = File(inputName).readLines()
     File(outputName).bufferedWriter().use {
         it.write("<html>\n<body>\n<p>\n")
         val list = mutableListOf("")
         for (i in reader.indices) {
-            var line = reader[i]
-            if (line.isEmpty() && reader[i + 1].isNotEmpty()) {
+            val line = reader[i]
+            if (line.isBlank() && reader[i + 1].isNotBlank()) {
                 it.newLine()
                 it.write("</p>\n<p>")
-                continue
-            }
-            line += "  "
-            it.newLine()
-            var i = 0
-            while (i < line.length - 2) {
-                if (line[i] == '*' && line[i + 2] == '*' && line[i + 1] == '*') {
-                    it.write("</b></i>")
-                    i += 3
-                    continue
-                }
-                if (line[i] == '*' && line[i + 1] == '*') {
-                    if (list.last() == "**") {
-                        it.write("</b>")
-                        list.remove(list.last())
-                        i += 2
-                        continue
-                    } else {
-                        it.write("<b>")
-                        i += 2
-                        list += "**"
-                        continue
+            } else {
+                it.newLine()
+                var i = 0
+                while (i < line.length) {
+                    if (line[i] == '*' && line[i + 1] == '*' && line[i + 2] == '*' && list.last() != "**") {
+                        if (list.last() == "***") {
+                            it.write("</b></i>")
+                            list.removeLast()
+                            i += 3
+                        } else {
+                            it.write("<i><b>")
+                            i += 3
+                            list += "***"
+                        }
+                    } else if (line[i] == '*' && line[i + 1] == '*') {
+                        if (list.last() == "**") {
+                            it.write("</b>")
+                            list.removeLast()
+                            i += 2
+                        } else {
+                            it.write("<b>")
+                            i += 2
+                            list += "**"
+                        }
+                    } else if (line[i] == '*') {
+                        if (list.last() == "*") {
+                            it.write("</i>")
+                            list.removeLast()
+                            i += 1
+
+                        } else {
+                            it.write("<i>")
+                            i += 1
+                            list += "*"
+                        }
+                    }
+                    if (line[i] == '~' && line[i + 1] == '~') {
+                        if (list.last() == "~~") {
+                            it.write("</s>")
+                            list.removeLast()
+                            i += 2
+                        } else {
+                            it.write("<s>")
+                            i += 2
+                            list += "~~"
+                        }
+                    }
+                    if (!listOf('*', '~').contains(line[i])) {
+                        it.write("${line[i]}")
+                        i++
                     }
                 }
-                if (line[i] == '*') {
-                    if (list.last() == "*") {
-                        it.write("</i>")
-                        list.remove(list.last())
-                        i += 1
-                        continue
-                    } else {
-                        it.write("<i>")
-                        i += 1
-                        list += "*"
-                        continue
-                    }
-                }
-                if (line[i] == '~' && line[i + 1] == '~') {
-                    if (list.last() == "~~") {
-                        it.write("</s>")
-                        list.remove(list.last())
-                        i += 2
-                        continue
-                    } else {
-                        it.write("<s>")
-                        i += 2
-                        list += "~~"
-                        continue
-                    }
-                }
-                it.write("${line[i]}")
-                i++
             }
         }
         it.write("</p>\n</body>\n</html>")
@@ -511,7 +510,7 @@ fun markdownToHtmlLists(inputName: String, outputName: String) {
             while (stack.isNotEmpty()) {
                 it.write("</li>")
                 it.write("</" + stack.last() + ">")
-                stack.removeAt(stack.size - 1)
+                stack.removeLast()
                 s = 0
             }
         }
@@ -559,7 +558,7 @@ fun markdownToHtmlLists(inputName: String, outputName: String) {
                             }
                             else -> {
                                 it.write("</" + stack.last() + ">")
-                                stack.removeAt(stack.size - 1)
+                                stack.removeLast()
                                 s--
                             }
                         }
