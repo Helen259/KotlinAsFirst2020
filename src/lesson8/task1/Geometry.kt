@@ -245,6 +245,17 @@ fun minContainingCircle(vararg points: Point): Circle {
     var circle = circleByDiameter(twoPointDiameter)
     // если точки 2, то возвращаем окружность
     if (points.size == 2) return circle
+    for (pt in points) {
+        if (!circle.contains(pt)) {
+            circle = circleByThreePoints(twoPointDiameter.begin, twoPointDiameter.end, pt)
+        }
+    }
+    return circle
+}
+    /*val twoPointDiameter = diameter(*points);
+    var circle = circleByDiameter(twoPointDiameter)
+    // если точки 2, то возвращаем окружность
+    if (points.size == 2) return circle
     val outpoints = arrayListOf<Point>()
 
     for (pt in points) {
@@ -266,4 +277,4 @@ fun minContainingCircle(vararg points: Point): Circle {
         Circle(center, max)
     } else
         circle
-}
+}*/
