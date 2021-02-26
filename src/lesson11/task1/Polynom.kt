@@ -51,12 +51,8 @@ class Polynom(vararg coeffs: Double) {
      * Слагаемые с нулевыми коэффициентами игнорировать, т.е.
      * степень 0x^2+0x+2 также равна 0.
      */
-    fun degree(): Int {
-        for (i in list.indices) {
-            return list.size - i - 1
-        }
-        return 0
-    }
+    fun degree(): Int = list.size - 1
+
 
     /**
      * Сложение
